@@ -13,3 +13,4 @@ handling.
 
 • Nearest neighbor search i.e. shows suggested words if the word you are looking for is not found.
 # Dictionary
+# Dictionary
