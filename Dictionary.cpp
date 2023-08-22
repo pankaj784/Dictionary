@@ -1,5 +1,6 @@
 #include <bits/stdc++.h>
 #include <string.h>
+#include "LRUCache.h"
 using namespace std;
 
 #define ALPHABET_SIZE 26
@@ -58,7 +59,6 @@ int insert(struct trieNode *root, string word, string meaning)
 
     pCrawl->isEndOfWord = true;
     pCrawl->value = meaning;
-
     return true;
 }
 
@@ -97,8 +97,15 @@ int readWordsFromFile(struct trieNode *root, const char *filename)
     return true;
 }
 
-bool search(struct trieNode *root, string word)
+bool search(struct trieNode *root, string word, LRUCache &lru)
 {
+    string str = lru.get(word);
+    if (str != "")
+    {
+        cout << "The meaning of the word is(from lru cache): \n";
+        cout << str;
+        return true;
+    }
     struct trieNode *pCrawl = root;
 
     for (int i = 0; i < word.length(); i++)
@@ -106,7 +113,10 @@ bool search(struct trieNode *root, string word)
         int index = letterToInt(word[i]);
 
         if (!pCrawl->children[index])
+        {
+            lru.put(word, "");
             return false;
+        }
 
         pCrawl = pCrawl->children[index];
     }
@@ -115,8 +125,8 @@ bool search(struct trieNode *root, string word)
     {
         cout << "The meaning of the word is: \n";
         cout << pCrawl->value;
+        lru.put(word, pCrawl->value);
     }
-
     return true;
 }
 
@@ -206,38 +216,12 @@ void prefix_search(struct trieNode *root, string prefix)
     char allWords[50];
     print_prefix_search(pCrawl, allWords, 0, prefix);
 }
-
-bool searchSuggestedWord(struct trieNode *root, string word, int count)
-{
-    struct trieNode *pCrawl = root;
-
-    for (int i = 0; i < word.length(); i++)
-    {
-        int index = letterToInt(word[i]);
-
-        if (!pCrawl->children[index])
-            return false;
-
-        pCrawl = pCrawl->children[index];
-    }
-
-    if (pCrawl != NULL && pCrawl->isEndOfWord)
-    {
-        if (count == 0)
-        {
-            cout << "Suggested words are: ";
-        }
-        cout << word << "  ";
-    }
-
-    return true;
-}
 int main()
 {
     struct trieNode *root = getNode();
 
+    LRUCache lru(10);
     readWordsFromFile(root, "words.txt");
-
     string command;
     do
     {
@@ -247,6 +231,7 @@ int main()
         cout << "3. Delete a word.\n";
         cout << "4. Print dictionary in alphabetical order.\n";
         cout << "5. Prefix search.\n";
+        cout << "6. Most recently searched words.\n";
         cout << "\n";
         fflush(stdin);
 
@@ -277,7 +262,7 @@ int main()
             cout << "Enter the word you would like to search: ";
             cin >> word;
 
-            if (!search(root, word))
+            if (!search(root, word, lru))
             {
                 cout << "Sorry, the word you searched for doesn't exist. Would you like to add it to the Dictionary.(Yes/No) ";
 
@@ -330,8 +315,13 @@ int main()
 
             break;
 
+        case 6:
+            lru.printCache();
+            break;
+
         default:
             cout << "Enter a valid entry.";
+            break;
         }
         fflush(stdin);
         cout << "\n\nWould you like to continue or exit?(Yes/N0) ";
