@@ -10,5 +10,3 @@ handling.
 • Printing the words in an alphabetical manner.
 
 • Prefix searching i.e. all words with the entered prefix will be displayed.
-
-• Nearest neighbor search i.e. shows suggested words if the word you are looking for is not found.
